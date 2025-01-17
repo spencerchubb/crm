@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { useState, useEffect } from 'react';
 
 // It is safe for these to be public
 const supabase = createClient(
@@ -7,11 +8,55 @@ const supabase = createClient(
 );
 
 function App() {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-      <SignInWithGoogleButton />
-    </div>
-  )
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [user, setUser] = useState(undefined);
+
+  useEffect(() => {
+    supabase.auth.onAuthStateChange((event, session) => {
+      console.log(session?.user);
+      setUser(session?.user);
+      setLoadingUser(false);
+    });
+  }, []);
+
+  return loadingUser
+    ? <LoadingPage />
+    : user
+      ? <HomePage />
+      : <SignInPage />;
+}
+
+function LoadingPage() {
+  return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+    <LoadingSpinner size={50} strokeWidth={8} />
+  </div>
+}
+
+function LoadingSpinner({ size = 32, strokeWidth = 10 }) {
+  const radius = size / 2 - strokeWidth / 2;
+  return <div className="loadingSpinner" style={{ width: size, height: size }}>
+    <svg viewBox="0 0 100 100">
+      <defs>
+        <linearGradient id="strokeGradient">
+          <stop offset="0%" stopColor="#48a5ff" />
+          <stop offset="100%" stopColor="#4e00d7" />
+        </linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r={radius} stroke="url(#strokeGradient)" strokeWidth={strokeWidth} fill="none" />
+    </svg>
+  </div>
+}
+
+function HomePage() {
+  return <div>
+    <p>Home Page</p>
+  </div>
+}
+
+function SignInPage() {
+  return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+    <SignInWithGoogleButton />
+  </div>
 }
 
 function SignInWithGoogleButton() {
@@ -22,6 +67,9 @@ function SignInWithGoogleButton() {
       console.log('clicked');
       supabase.auth.signInWithOAuth({
         provider: 'google',
+        options: {
+          redirectTo: 'https://pokkflfmgpbgphcredjk.supabase.co/auth/v1/callback'
+        },
       })
     }}
   >
