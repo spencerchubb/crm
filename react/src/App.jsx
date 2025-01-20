@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // It is safe for these to be public
 const supabase = createClient(
@@ -11,24 +11,53 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(undefined);
   const [tickets, setTickets] = useState([]);
+  const userRef = useRef(undefined);
 
   useEffect(() => {
-    console.log('supabase.auth.getUser()');
-    supabase.auth.getUser().then(async ({ data, error }) => {
-      if (error) {
-        setLoading(false);
+    async function fetchData(session) {
+      if (JSON.stringify(userRef.current) === JSON.stringify(session?.user)) {
+        console.log('User is the same');
         return;
       }
+      userRef.current = session?.user;
 
-      const { data: tickets, error: ticketsError } = await supabase.from('tickets').select('*');
+      // To make it possible to join with users, we created this view:
+      // https://supabase.com/dashboard/project/pokkflfmgpbgphcredjk/sql/1ba57cf9-8bea-49c0-a91b-946adab6d8ef
+      const { data: tickets, error: ticketsError } = await supabase
+        .from('tickets')
+        .select(`*, users!tickets_requester_id_fkey(raw_user_meta_data)`);
       if (ticketsError) {
         console.error(ticketsError);
         return;
       }
-      setUser(data.user);
+      setUser(session?.user);
       setTickets(tickets);
       setLoading(false);
+    }
+
+    const authListener = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('supabase.auth.onAuthStateChange()');
+      if (!session) {
+        setLoading(false);
+        return;
+      }
+
+      fetchData(session);
     });
+
+    supabase.auth.getUser().then(async ({ session, error }) => {
+      console.log('supabase.auth.getUser()');
+      if (!session || error) {
+        setLoading(false);
+        return;
+      }
+
+      fetchData(session);
+    });
+
+    return () => {
+      authListener.data.subscription.unsubscribe();
+    };
   }, []);
 
   return loading
@@ -43,6 +72,7 @@ function HomePage({ tickets }) {
     <table>
       <thead>
         <tr>
+          <th>Requester</th>
           <th>Subject</th>
           <th>Status</th>
           <th>Priority</th>
@@ -51,6 +81,7 @@ function HomePage({ tickets }) {
       </thead>
       <tbody>
         {tickets.map((ticket) => <tr key={ticket.id}>
+          <RequesterCell requester={ticket.users.raw_user_meta_data} />
           <td>{ticket.subject}</td>
           <td><StatusBadge status={ticket.status} /></td>
           <td><PriorityBadge priority={ticket.priority} /></td>
@@ -61,8 +92,17 @@ function HomePage({ tickets }) {
   </div>
 }
 
+function RequesterCell({ requester }) {
+  return <td>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <img src={requester.avatar_url} alt={requester.name} style={{ width: 32, height: 32, borderRadius: 100 }} />
+      <p>{requester.name}</p>
+    </div>
+  </td>
+}
+
 function StatusBadge({ status }) {
-  const baseStyle = { padding: '4px 8px', borderRadius: 100 };
+  const baseStyle = { padding: '4px 8px', borderRadius: 100, color: 'white' };
   if (status === 'New') return <div style={{ background: '#00f', ...baseStyle }}>New</div>;
   if (status === 'Open') return <div style={{ background: '#050', ...baseStyle }}>Open</div>;
   if (status === 'Pending') return <div style={{ background: '#550', ...baseStyle }}>Pending</div>;
@@ -73,7 +113,7 @@ function StatusBadge({ status }) {
 }
 
 function PriorityBadge({ priority }) {
-  const baseStyle = { padding: '4px 8px', borderRadius: 100 };
+  const baseStyle = { padding: '4px 8px', borderRadius: 100, color: 'white' };
   if (priority === 'Low') return <div style={{ background: '#050', ...baseStyle }}>Low</div>;
   if (priority === 'Normal') return <div style={{ background: '#550', ...baseStyle }}>Normal</div>;
   if (priority === 'High') return <div style={{ background: '#840', ...baseStyle }}>High</div>;
@@ -113,7 +153,6 @@ function SignInWithGoogleButton() {
     id="googleButton"
     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     onClick={() => {
-      console.log('clicked');
       supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
