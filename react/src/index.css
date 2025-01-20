@@ -59,7 +59,9 @@ h4,
 h5,
 h6,
 p,
-li {
+li,
+th,
+td {
   color: #ccc;
 }
 
@@ -71,4 +73,31 @@ li {
   to {
     transform: rotate(360deg);
   }
+}
+
+.tableWrapper {
+  max-width: 100%;
+  width: fit-content;
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th {
+  font-size: 18px;
+}
+
+th, td {
+  border-bottom: solid 1px var(--gray-500);
+  padding: 12px;
+  color: white;
+  text-align: left;
+  white-space: nowrap;
+  border: solid 1px #444;
+}
+
+th, tr:nth-child(even) {
+  background: #080808;
 }

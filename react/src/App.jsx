@@ -8,27 +8,82 @@ const supabase = createClient(
 );
 
 function App() {
-  const [loadingUser, setLoadingUser] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(undefined);
+  const [tickets, setTickets] = useState([]);
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange((event, session) => {
-      console.log(session?.user);
-      setUser(session?.user);
-      setLoadingUser(false);
+    console.log('supabase.auth.getUser()');
+    supabase.auth.getUser().then(async ({ data, error }) => {
+      if (error) {
+        setLoading(false);
+        return;
+      }
+
+      const { data: tickets, error: ticketsError } = await supabase.from('tickets').select('*');
+      if (ticketsError) {
+        console.error(ticketsError);
+        return;
+      }
+      setUser(data.user);
+      setTickets(tickets);
+      setLoading(false);
     });
   }, []);
 
-  return loadingUser
+  return loading
     ? <LoadingPage />
     : user
-      ? <HomePage />
+      ? <HomePage tickets={tickets} />
       : <SignInPage />;
+}
+
+function HomePage({ tickets }) {
+  return <div className="tableWrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {tickets.map((ticket) => <tr key={ticket.id}>
+          <td>{ticket.subject}</td>
+          <td><StatusBadge status={ticket.status} /></td>
+          <td><PriorityBadge priority={ticket.priority} /></td>
+          <td>{new Date(ticket.created_at).toLocaleString()}</td>
+        </tr>)}
+      </tbody>
+    </table>
+  </div>
+}
+
+function StatusBadge({ status }) {
+  const baseStyle = { padding: '4px 8px', borderRadius: 100 };
+  if (status === 'New') return <div style={{ background: '#00f', ...baseStyle }}>New</div>;
+  if (status === 'Open') return <div style={{ background: '#050', ...baseStyle }}>Open</div>;
+  if (status === 'Pending') return <div style={{ background: '#550', ...baseStyle }}>Pending</div>;
+  if (status === 'On-hold') return <div style={{ background: '#840', ...baseStyle }}>On-hold</div>;
+  if (status === 'Solved') return <div style={{ background: '#808', ...baseStyle }}>Solved</div>;
+  if (status === 'Closed') return <div style={{ background: '#333', ...baseStyle }}>Closed</div>;
+  return <div style={{ background: '#222', ...baseStyle }}>Unknown</div>;
+}
+
+function PriorityBadge({ priority }) {
+  const baseStyle = { padding: '4px 8px', borderRadius: 100 };
+  if (priority === 'Low') return <div style={{ background: '#050', ...baseStyle }}>Low</div>;
+  if (priority === 'Normal') return <div style={{ background: '#550', ...baseStyle }}>Normal</div>;
+  if (priority === 'High') return <div style={{ background: '#840', ...baseStyle }}>High</div>;
+  if (priority === 'Urgent') return <div style={{ background: '#a00', ...baseStyle }}>Urgent</div>;
+  return <div style={{ background: '#333', ...baseStyle }}>Unknown</div>;
 }
 
 function LoadingPage() {
   return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-    <LoadingSpinner size={50} strokeWidth={8} />
+    <LoadingSpinner size={75} strokeWidth={10} />
   </div>
 }
 
@@ -44,12 +99,6 @@ function LoadingSpinner({ size = 32, strokeWidth = 10 }) {
       </defs>
       <circle cx="50" cy="50" r={radius} stroke="url(#strokeGradient)" strokeWidth={strokeWidth} fill="none" />
     </svg>
-  </div>
-}
-
-function HomePage() {
-  return <div>
-    <p>Home Page</p>
   </div>
 }
 
