@@ -45,13 +45,6 @@ body {
   }
 }
 
-.loadingSpinner {
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  animation: spin 1.5s linear infinite;
-}
-
 h1,
 h2,
 h3,
@@ -63,6 +56,37 @@ li,
 th,
 td {
   color: #ddd;
+}
+
+input,
+textarea {
+  font-size: 16px;
+  background: none;
+  border: solid 1px #444;
+  padding: 8px;
+  border-radius: 4px;
+  color: #ddd;
+}
+
+.btnPrimary {
+  background: rgb(97, 0, 194);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgb(51, 0, 102);
+  }
+}
+
+.loadingSpinner {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1.5s linear infinite;
 }
 
 @keyframes spin {
@@ -101,6 +125,19 @@ td {
 th,
 tr:nth-child(even) {
   background: #080808;
+}
+
+.issuesList {
+  & a {
+    text-decoration: none;
+    color: #ddd;
+    font-weight: 700;
+    width: fit-content;
+
+    &:hover {
+      color: #44f;
+    }
+  }
 }
 
 .badge {

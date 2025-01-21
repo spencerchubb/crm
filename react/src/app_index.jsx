@@ -1,16 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
 import { useState, useEffect, useRef } from 'react';
-
-// It is safe for these to be public
-const supabase = createClient(
-  'https://pokkflfmgpbgphcredjk.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBva2tmbGZtZ3BiZ3BoY3JlZGprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcwNjQ3NTIsImV4cCI6MjA1MjY0MDc1Mn0.10hc4EaxG5Ji8Y-XdwSNVQOXgZLN74Kl-zhLkhevNFo',
-);
+import { format } from 'timeago.js';
+import { supabase } from './supabase';
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(undefined);
-  const [tickets, setTickets] = useState([]);
+  const [issues, setIssues] = useState([]);
   const userRef = useRef(undefined);
 
   useEffect(() => {
@@ -22,16 +17,16 @@ function App() {
 
       // To make it possible to join with users, we created this view:
       // https://supabase.com/dashboard/project/pokkflfmgpbgphcredjk/sql/1ba57cf9-8bea-49c0-a91b-946adab6d8ef
-      const { data: tickets, error: ticketsError } = await supabase
-        .from('tickets')
+      const { data: issues, error: issuesError } = await supabase
+        .from('issues')
         .select(`*, users(raw_user_meta_data)`)
         .order('created_at', { ascending: false });
-      if (ticketsError) {
-        console.error(ticketsError);
+      if (issuesError) {
+        console.error(issuesError);
         return;
       }
       setUser(session?.user);
-      setTickets(tickets);
+      setIssues(issues);
       setLoading(false);
     }
 
@@ -58,49 +53,28 @@ function App() {
     };
   }, []);
 
-  return loading
-    ? <LoadingPage />
-    : user
-      ? <HomePage tickets={tickets} setTickets={setTickets} />
-      : <SignInPage />;
-}
+  if (loading) return <LoadingPage />;
+  if (!user) return <SignInPage />;
 
-function HomePage({ tickets, setTickets }) {
-  return <div className="tableWrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Requester</th>
-          <th>Subject</th>
-          <th>Status</th>
-          <th>Priority</th>
-          <th>Created</th>
-        </tr>
-      </thead>
-      <tbody>
-        {tickets.map((ticket) => <tr key={ticket.id}>
-          <RequesterCell requester={ticket.users.raw_user_meta_data} />
-          <td>{ticket.subject}</td>
-          <td><StatusBadge ticket={ticket} setTickets={setTickets} /></td>
-          <td><PriorityBadge ticket={ticket} setTickets={setTickets} /></td>
-          <td>{new Date(ticket.created_at).toLocaleString()}</td>
-        </tr>)}
-      </tbody>
-    </table>
+  return <div>
+    <a href="/new_issue.html"><button className="btnPrimary">New issue</button></a>
+    <div className="issuesList">
+      {issues.map(issue => <div key={issue.id} style={{ display: 'flex', flexDirection: 'column', padding: 8, gap: 4, borderTop: 'solid 1px #555' }}>
+        <a href={`/?issue=${issue.id}`}>{issue.title}</a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#aaa' }}>
+          <p style={{ fontSize: 14, color: '#aaa' }}>
+            {issue.users.raw_user_meta_data.name}
+            &nbsp;opened&nbsp;
+            <span title={new Date(issue.created_at).toLocaleString()}>{format(issue.created_at.toLocaleString())}</span>
+          </p>
+        </div>
+      </div>)}
+    </div>
   </div>
 }
 
-function RequesterCell({ requester }) {
-  return <td>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <img src={requester.avatar_url} alt={requester.name} style={{ width: 32, height: 32, borderRadius: 100 }} />
-      <p>{requester.name}</p>
-    </div>
-  </td>
-}
-
-function StatusBadge({ ticket, setTickets }) {
-  let status = ticket.status;
+function StatusBadge({ issue, setIssues }) {
+  let status = issue.status;
   const map = {
     'New': 'blue',
     'Open': 'green',
@@ -116,15 +90,15 @@ function StatusBadge({ ticket, setTickets }) {
     value={status}
     onChange={async (e) => {
       const value = e.target.value;
-      setTickets(tickets => {
-        return tickets.map(element => {
-          if (element.id === ticket.id) {
+      setIssues(issues => {
+        return issues.map(element => {
+          if (element.id === issue.id) {
             return { ...element, status: value };
           }
           return element;
         });
       });
-      await supabase.from('tickets').update({ status: value }).eq('id', ticket.id);
+      await supabase.from('issues').update({ status: value }).eq('id', issue.id);
     }}
   >
     <option value="New">New</option>
@@ -136,8 +110,8 @@ function StatusBadge({ ticket, setTickets }) {
   </select>;
 }
 
-function PriorityBadge({ ticket, setTickets }) {
-  let priority = ticket.priority;
+function PriorityBadge({ issue, setIssues }) {
+  let priority = issue.priority;
   const map = {
     'Low': 'green',
     'Normal': 'yellow',
@@ -151,15 +125,15 @@ function PriorityBadge({ ticket, setTickets }) {
     value={priority}
     onChange={async (e) => {
       const value = e.target.value;
-      setTickets(tickets => {
-        return tickets.map(element => {
-          if (element.id === ticket.id) {
+      setIssues(issues => {
+        return issues.map(element => {
+          if (element.id === issue.id) {
             return { ...element, priority: value };
           }
           return element;
         });
       });
-      await supabase.from('tickets').update({ priority: value }).eq('id', ticket.id);
+      await supabase.from('issues').update({ priority: value }).eq('id', issue.id);
     }}
   >
     <option value="Low">Low</option>
