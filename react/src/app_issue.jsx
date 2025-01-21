@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { supabase } from './supabase';
-import { AuthWrapper } from './AuthWrapper';
+import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
 
 const searchParams = new URLSearchParams(window.location.search);
 const issueId = searchParams.get('id');
 
 function App() {
-  const [user, setUser] = useState(undefined);
-  const [loading, setLoading] = useState(true);
+  const authWrapperHook = useAuthWrapper();
   const [issue, setIssue] = useState(undefined);
 
   async function fetchData(session) {
@@ -23,10 +22,10 @@ function App() {
     console.log(issue);
     document.title = issue?.title;
     setIssue(issue);
-    setUser(session?.user);
+    authWrapperHook.setUser(session?.user);
   }
 
-  return <AuthWrapper fetchData={fetchData} user={user} loading={loading} setLoading={setLoading}>
+  return <AuthWrapper fetchData={fetchData} authWrapperHook={authWrapperHook}>
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 700 }}>
       <h1>{issue?.title}</h1>
       <p style={{ marginTop: 16 }}>{issue?.description}</p>

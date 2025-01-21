@@ -1,18 +1,17 @@
 import { useState } from 'react';
 import { supabase } from './supabase';
-import { AuthWrapper } from './AuthWrapper';
+import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
 
 function App() {
-  const [user, setUser] = useState(undefined);
-  const [loading, setLoading] = useState(true);
+  const authWrapperHook = useAuthWrapper();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
   async function fetchData(session) {
-    setUser(session?.user);
+    authWrapperHook.setUser(session?.user);
   }
 
-  return <AuthWrapper fetchData={fetchData} user={user} loading={loading} setLoading={setLoading}>
+  return <AuthWrapper fetchData={fetchData} authWrapperHook={authWrapperHook}>
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 700 }}>
       <p style={{ marginTop: 16 }}>Title</p>
       <input
@@ -36,12 +35,12 @@ function App() {
           console.log({
             title,
             description,
-            author_id: user.id,
+            author_id: authWrapperHook.user.id,
           });
           const { error } = await supabase.from('issues').insert({
             title,
             description,
-            author_id: user.id,
+            author_id: authWrapperHook.user.id,
           });
           if (error) {
             console.error(error);

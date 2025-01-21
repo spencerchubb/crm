@@ -1,26 +1,13 @@
 import { useEffect, useRef } from 'react';
-import { supabase } from './supabase';
+import { supabase } from '../supabase';
 
-export function AuthWrapper({ fetchData, user, loading, setLoading, children }) {
+export function AuthWrapper({ fetchData, authWrapperHook, children }) {
   const userRef = useRef(undefined);
 
   useEffect(() => {
     const authListener = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!session) {
-        setLoading(false);
-        return;
-      }
-      if (JSON.stringify(userRef.current) === JSON.stringify(session?.user)) {
-        return;
-      }
-      userRef.current = session?.user;
-
-      fetchData(session);
-    });
-
-    supabase.auth.getUser().then(async ({ session, error }) => {
-      if (!session || error) {
-        setLoading(false);
+        authWrapperHook.setUser(undefined);
         return;
       }
       if (JSON.stringify(userRef.current) === JSON.stringify(session?.user)) {
@@ -34,10 +21,10 @@ export function AuthWrapper({ fetchData, user, loading, setLoading, children }) 
     return () => {
       authListener.data.subscription.unsubscribe();
     };
-  }, [fetchData]);
+  }, [fetchData, authWrapperHook]);
 
-  if (loading) return <LoadingPage />;
-  if (!user) return <SignInPage />;
+  if (authWrapperHook.loading) return <LoadingPage />;
+  if (!authWrapperHook.user) return <SignInPage />;
   return children;
 }
 

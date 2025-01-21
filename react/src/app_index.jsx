@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { format } from 'timeago.js';
 import { supabase } from './supabase';
-import { AuthWrapper } from './AuthWrapper';
+import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
 
 function App() {
-  const [user, setUser] = useState(undefined);
-  const [loading, setLoading] = useState(true);
+  const authWrapperHook = useAuthWrapper();
   const [issues, setIssues] = useState([]);
 
   async function fetchData(session) {
+    console.log('fetching issues');
     // To make it possible to join with users, we created this view:
     // https://supabase.com/dashboard/project/pokkflfmgpbgphcredjk/sql/1ba57cf9-8bea-49c0-a91b-946adab6d8ef
     const { data: issues, error: issuesError } = await supabase
@@ -20,10 +20,10 @@ function App() {
       return;
     }
     setIssues(issues);
-    setUser(session?.user);
+    authWrapperHook.setUser(session?.user);
   }
 
-  return <AuthWrapper fetchData={fetchData} user={user} loading={loading} setLoading={setLoading}>
+  return <AuthWrapper fetchData={fetchData} authWrapperHook={authWrapperHook}>
     <div>
       <a href="/new_issue.html"><button className="btnPrimary">New issue</button></a>
       <div className="issuesList">
