@@ -16,7 +16,6 @@ function App() {
   useEffect(() => {
     async function fetchData(session) {
       if (JSON.stringify(userRef.current) === JSON.stringify(session?.user)) {
-        console.log('User is the same');
         return;
       }
       userRef.current = session?.user;
@@ -25,7 +24,8 @@ function App() {
       // https://supabase.com/dashboard/project/pokkflfmgpbgphcredjk/sql/1ba57cf9-8bea-49c0-a91b-946adab6d8ef
       const { data: tickets, error: ticketsError } = await supabase
         .from('tickets')
-        .select(`*, users!tickets_requester_id_fkey(raw_user_meta_data)`);
+        .select(`*, users(raw_user_meta_data)`)
+        .order('created_at', { ascending: false });
       if (ticketsError) {
         console.error(ticketsError);
         return;
@@ -36,7 +36,6 @@ function App() {
     }
 
     const authListener = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('supabase.auth.onAuthStateChange()');
       if (!session) {
         setLoading(false);
         return;
@@ -46,7 +45,6 @@ function App() {
     });
 
     supabase.auth.getUser().then(async ({ session, error }) => {
-      console.log('supabase.auth.getUser()');
       if (!session || error) {
         setLoading(false);
         return;
@@ -63,11 +61,11 @@ function App() {
   return loading
     ? <LoadingPage />
     : user
-      ? <HomePage tickets={tickets} />
+      ? <HomePage tickets={tickets} setTickets={setTickets} />
       : <SignInPage />;
 }
 
-function HomePage({ tickets }) {
+function HomePage({ tickets, setTickets }) {
   return <div className="tableWrapper">
     <table>
       <thead>
@@ -83,8 +81,8 @@ function HomePage({ tickets }) {
         {tickets.map((ticket) => <tr key={ticket.id}>
           <RequesterCell requester={ticket.users.raw_user_meta_data} />
           <td>{ticket.subject}</td>
-          <td><StatusBadge status={ticket.status} /></td>
-          <td><PriorityBadge priority={ticket.priority} /></td>
+          <td><StatusBadge ticket={ticket} setTickets={setTickets} /></td>
+          <td><PriorityBadge ticket={ticket} setTickets={setTickets} /></td>
           <td>{new Date(ticket.created_at).toLocaleString()}</td>
         </tr>)}
       </tbody>
@@ -101,24 +99,74 @@ function RequesterCell({ requester }) {
   </td>
 }
 
-function StatusBadge({ status }) {
-  const baseStyle = { padding: '4px 8px', borderRadius: 100, color: 'white' };
-  if (status === 'New') return <div style={{ background: '#00f', ...baseStyle }}>New</div>;
-  if (status === 'Open') return <div style={{ background: '#050', ...baseStyle }}>Open</div>;
-  if (status === 'Pending') return <div style={{ background: '#550', ...baseStyle }}>Pending</div>;
-  if (status === 'On-hold') return <div style={{ background: '#840', ...baseStyle }}>On-hold</div>;
-  if (status === 'Solved') return <div style={{ background: '#808', ...baseStyle }}>Solved</div>;
-  if (status === 'Closed') return <div style={{ background: '#333', ...baseStyle }}>Closed</div>;
-  return <div style={{ background: '#222', ...baseStyle }}>Unknown</div>;
+function StatusBadge({ ticket, setTickets }) {
+  let status = ticket.status;
+  const map = {
+    'New': 'blue',
+    'Open': 'green',
+    'Pending': 'yellow',
+    'On-hold': 'orange',
+    'Solved': 'purple',
+    'Closed': 'gray',
+    'Unknown': 'gray',
+  };
+  if (!map[status]) status = 'Unknown';
+  return <select
+    className={`badge ${map[status]}`}
+    value={status}
+    onChange={async (e) => {
+      const value = e.target.value;
+      setTickets(tickets => {
+        return tickets.map(element => {
+          if (element.id === ticket.id) {
+            return { ...element, status: value };
+          }
+          return element;
+        });
+      });
+      await supabase.from('tickets').update({ status: value }).eq('id', ticket.id);
+    }}
+  >
+    <option value="New">New</option>
+    <option value="Open">Open</option>
+    <option value="Pending">Pending</option>
+    <option value="On-hold">On-hold</option>
+    <option value="Solved">Solved</option>
+    <option value="Closed">Closed</option>
+  </select>;
 }
 
-function PriorityBadge({ priority }) {
-  const baseStyle = { padding: '4px 8px', borderRadius: 100, color: 'white' };
-  if (priority === 'Low') return <div style={{ background: '#050', ...baseStyle }}>Low</div>;
-  if (priority === 'Normal') return <div style={{ background: '#550', ...baseStyle }}>Normal</div>;
-  if (priority === 'High') return <div style={{ background: '#840', ...baseStyle }}>High</div>;
-  if (priority === 'Urgent') return <div style={{ background: '#a00', ...baseStyle }}>Urgent</div>;
-  return <div style={{ background: '#333', ...baseStyle }}>Unknown</div>;
+function PriorityBadge({ ticket, setTickets }) {
+  let priority = ticket.priority;
+  const map = {
+    'Low': 'green',
+    'Normal': 'yellow',
+    'High': 'orange',
+    'Urgent': 'red',
+    'Unknown': 'gray',
+  };
+  if (!map[priority]) priority = 'Unknown';
+  return <select
+    className={`badge ${map[priority]}`}
+    value={priority}
+    onChange={async (e) => {
+      const value = e.target.value;
+      setTickets(tickets => {
+        return tickets.map(element => {
+          if (element.id === ticket.id) {
+            return { ...element, priority: value };
+          }
+          return element;
+        });
+      });
+      await supabase.from('tickets').update({ priority: value }).eq('id', ticket.id);
+    }}
+  >
+    <option value="Low">Low</option>
+    <option value="Normal">Normal</option>
+    <option value="High">High</option>
+    <option value="Urgent">Urgent</option>
+  </select>;
 }
 
 function LoadingPage() {
