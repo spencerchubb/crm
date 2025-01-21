@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from './supabase';
 import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
+import { MarkdownEditor } from './components/MarkdownEditor';
 
 function App() {
   const authWrapperHook = useAuthWrapper();
@@ -22,12 +23,8 @@ function App() {
         onChange={e => setTitle(e.target.value)}
       />
       <p style={{ marginTop: 16 }}>Description</p>
-      <textarea
-        placeholder="Write description in Markdown"
-        style={{ marginTop: 4 }}
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-      />
+      <div style={{ marginTop: 4 }}></div>
+      <MarkdownEditor description={description} setDescription={setDescription} />
       <button
         style={{ marginTop: 16, alignSelf: 'flex-end' }}
         className="btnPrimary"

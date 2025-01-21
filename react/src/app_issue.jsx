@@ -1,10 +1,48 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { supabase } from './supabase';
 import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
 import { Timestamp } from './components/Timestamp';
+import ReactMarkdown from 'react-markdown';
 
 const searchParams = new URLSearchParams(window.location.search);
 const issueId = searchParams.get('id');
+
+const Message = memo(function Message({ message }) {
+  return (
+    <div style={{
+      marginTop: 16,
+      padding: 16,
+      borderRadius: 8,
+      border: '1px solid #333'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: 8,
+        gap: 8,
+        color: '#aaa'
+      }}>
+        <img
+          src={message.users?.raw_user_meta_data?.avatar_url}
+          alt={message.users?.raw_user_meta_data?.name}
+          style={{ width: 32, height: 32, borderRadius: '50%' }}
+        />
+        <span style={{ fontWeight: 600 }}>
+          {message.users?.raw_user_meta_data?.name || 'Unknown User'}
+        </span>
+        <div style={{ flex: 1 }} />
+        <Timestamp timestamp={message.created_at} />
+      </div>
+      <div style={{
+        marginTop: 8,
+        color: '#e1e1e1',
+        lineHeight: '1.5'
+      }}>
+        <ReactMarkdown>{message.content}</ReactMarkdown>
+      </div>
+    </div>
+  );
+});
 
 function App() {
   const authWrapperHook = useAuthWrapper();
@@ -37,33 +75,10 @@ function App() {
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 700 }}>
       <h1>{issue?.title}</h1>
       <p style={{ marginTop: 16 }}>{issue?.description}</p>
-      
+
       <div>
         {messages.map(message => (
-          <div key={message.id} style={{ 
-            marginTop: 16, 
-            padding: 16, 
-            borderRadius: 8,
-            border: '1px solid #333'
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              marginBottom: 8,
-              color: '#aaa'
-            }}>
-              <span style={{ fontWeight: 600 }}>
-                {message.users?.raw_user_meta_data?.name || 'Unknown User'}
-              </span>
-              <Timestamp timestamp={message.created_at} />
-            </div>
-            <p style={{ 
-              marginTop: 8,
-              color: '#e1e1e1',
-              lineHeight: '1.5'
-            }}>{message.content}</p>
-          </div>
+          <Message key={message.id} message={message} />
         ))}
       </div>
     </div>
