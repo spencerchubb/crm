@@ -1,14 +1,13 @@
 import { useState } from 'react';
-import { format } from 'timeago.js';
 import { supabase } from './supabase';
 import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
+import { Timestamp } from './components/Timestamp';
 
 function App() {
   const authWrapperHook = useAuthWrapper();
   const [issues, setIssues] = useState([]);
 
   async function fetchData(session) {
-    console.log('fetching issues');
     // To make it possible to join with users, we created this view:
     // https://supabase.com/dashboard/project/pokkflfmgpbgphcredjk/sql/1ba57cf9-8bea-49c0-a91b-946adab6d8ef
     const { data: issues, error: issuesError } = await supabase
@@ -33,7 +32,7 @@ function App() {
             <p style={{ fontSize: 14, color: '#aaa' }}>
               {issue.users.raw_user_meta_data.name}
               &nbsp;opened&nbsp;
-              <span title={new Date(issue.created_at).toLocaleString()}>{format(issue.created_at.toLocaleString())}</span>
+              <Timestamp timestamp={issue.created_at} />
             </p>
           </div>
         </div>)}

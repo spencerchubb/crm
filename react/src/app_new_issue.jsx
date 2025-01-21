@@ -32,20 +32,27 @@ function App() {
         style={{ marginTop: 16, alignSelf: 'flex-end' }}
         className="btnPrimary"
         onClick={async () => {
-          console.log({
+          const { data: issueData, error: issueError } = await supabase.from('issues').insert({
             title,
-            description,
             author_id: authWrapperHook.user.id,
+          }).select();
+
+          if (issueError) {
+            console.error('Error creating issue:', issueError);
+            return;
+          }
+
+          // Create the first message for this issue
+          const { error: messageError } = await supabase.from('messages').insert({
+            issue_id: issueData[0].id,
+            uid: authWrapperHook.user.id,
+            content: description,
           });
-          const { error } = await supabase.from('issues').insert({
-            title,
-            description,
-            author_id: authWrapperHook.user.id,
-          });
-          if (error) {
-            console.error(error);
+
+          if (messageError) {
+            console.error('Error creating message:', messageError);
           } else {
-            console.log('Issue created');
+            console.log('Issue and message created successfully');
           }
         }}
       >
