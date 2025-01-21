@@ -4,6 +4,7 @@ import { AuthWrapper } from './AuthWrapper';
 
 function App() {
   const [user, setUser] = useState(undefined);
+  const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
@@ -11,7 +12,7 @@ function App() {
     setUser(session?.user);
   }
 
-  return <AuthWrapper fetchData={fetchData} user={user}>
+  return <AuthWrapper fetchData={fetchData} user={user} loading={loading} setLoading={setLoading}>
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 700 }}>
       <p style={{ marginTop: 16 }}>Title</p>
       <input

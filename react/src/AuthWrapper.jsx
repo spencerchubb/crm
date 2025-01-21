@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { supabase } from './supabase';
 
-export function AuthWrapper({ fetchData, user, children }) {
-  const [loading, setLoading] = useState(true);
+export function AuthWrapper({ fetchData, user, loading, setLoading, children }) {
   const userRef = useRef(undefined);
 
   useEffect(() => {

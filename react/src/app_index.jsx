@@ -5,6 +5,7 @@ import { AuthWrapper } from './AuthWrapper';
 
 function App() {
   const [user, setUser] = useState(undefined);
+  const [loading, setLoading] = useState(true);
   const [issues, setIssues] = useState([]);
 
   async function fetchData(session) {
@@ -22,12 +23,12 @@ function App() {
     setUser(session?.user);
   }
 
-  return <AuthWrapper fetchData={fetchData} user={user}>
+  return <AuthWrapper fetchData={fetchData} user={user} loading={loading} setLoading={setLoading}>
     <div>
       <a href="/new_issue.html"><button className="btnPrimary">New issue</button></a>
       <div className="issuesList">
         {issues.map(issue => <div key={issue.id} style={{ display: 'flex', flexDirection: 'column', padding: 8, gap: 4, borderTop: 'solid 1px #555' }}>
-          <a href={`/?issue=${issue.id}`}>{issue.title}</a>
+          <a href={`/issue.html?id=${issue.id}`}>{issue.title}</a>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#aaa' }}>
             <p style={{ fontSize: 14, color: '#aaa' }}>
               {issue.users.raw_user_meta_data.name}
