@@ -12,7 +12,6 @@ const issueId = searchParams.get('id');
 const Message = memo(function Message({ message }) {
   return (
     <div style={{
-      marginTop: 16,
       padding: 16,
       borderRadius: 8,
       border: '1px solid #333'
@@ -49,30 +48,11 @@ const Message = memo(function Message({ message }) {
 function CompleteWidget({ issue }) {
   // If completed_at is set, show timestamp and 'Mark as open' button.
   // Otherwise, show 'Mark as complete' button.
-
-  if (issue.completed_at) {
-    return <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <p style={{ color: '#aaa' }}>Completed <Timestamp timestamp={issue.completed_at} /></p>
-      <button
-        className="btnSecondary"
-        onClick={async () => {
-          const { error } = await supabase.from('issues').update({ completed_at: null }).eq('id', issueId);
-          if (error) {
-            console.error(error);
-            return;
-          }
-          location.reload();
-        }}
-      >
-        Mark as open
-      </button>
-    </div>
-  }
-
   return <button
+    style={{ display: 'flex', flexDirection: 'column', alignItems: 'start', gap: 4 }}
     className="btnSecondary"
     onClick={async () => {
-      const { error } = await supabase.from('issues').update({ completed_at: new Date() }).eq('id', issueId);
+      const { error } = await supabase.from('issues').update({ completed_at: issue.completed_at ? null : new Date() }).eq('id', issueId);
       if (error) {
         console.error(error);
         return;
@@ -80,7 +60,8 @@ function CompleteWidget({ issue }) {
       location.reload();
     }}
   >
-    Mark as complete
+    {issue.completed_at ? 'Mark as open' : 'Mark as complete'}
+    {issue.completed_at && <span style={{ color: '#aaa' }}>Completed <Timestamp timestamp={issue.completed_at} /></span>}
   </button>
 }
 
@@ -227,45 +208,46 @@ function App() {
     <div style={{
       padding: 16,
       display: 'flex',
+      flexDirection: 'column',
       width: '100%',
       maxWidth: 1000,
       gap: 16
     }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: 700 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-          <h1>{issue?.title}</h1>
-          <CompleteWidget issue={issue} />
-        </div>
-        <div>
+      <h1>{issue?.title}</h1>
+      <div style={{ display: 'flex', flexDirection: 'row', gap: 16 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {messages.map(message => (
             <Message key={message.id} message={message} />
           ))}
+          <MarkdownEditor
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+            placeholder="Write message in Markdown"
+          />
+          <button
+            style={{ alignSelf: 'flex-end' }}
+            className="btnPrimary"
+            onClick={async () => {
+              const { error } = await supabase.from('messages').insert({
+                issue_id: issueId,
+                content: comment,
+                uid: authWrapperHook.user.id
+              });
+              if (error) {
+                console.error(error);
+                return;
+              }
+              location.reload();
+            }}>
+            Send
+          </button>
         </div>
-        <div style={{ marginTop: 32 }}></div>
-        <MarkdownEditor
-          value={comment}
-          onChange={e => setComment(e.target.value)}
-          placeholder="Write message in Markdown"
-        />
-        <button
-          style={{ marginTop: 8, alignSelf: 'flex-end' }}
-          className="btnPrimary"
-          onClick={async () => {
-            const { error } = await supabase.from('messages').insert({
-              issue_id: issueId,
-              content: comment,
-              uid: authWrapperHook.user.id
-            });
-            if (error) {
-              console.error(error);
-              return;
-            }
-            location.reload();
-          }}>
-          Send
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <CompleteWidget issue={issue} />
+          <div style={{ marginTop: 16 }} />
+          <LabelManager labels={labels} attachedLabels={attachedLabels} setAttachedLabels={setAttachedLabels} />
+        </div>
       </div>
-      <LabelManager labels={labels} attachedLabels={attachedLabels} setAttachedLabels={setAttachedLabels} />
     </div>
   </AuthWrapper>
 }
