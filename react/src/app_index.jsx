@@ -4,16 +4,18 @@ import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
 import { Timestamp } from './components/Timestamp';
 
 const DEFAULT_SHOW_OPEN_ISSUES = true;
-const DEFAULT_LABEL = 'No label';
+const DEFAULT_LABEL = '';
+const DEFAULT_SORT_NEWEST = true;
 
 function App() {
   const authWrapperHook = useAuthWrapper();
   const [issues, setIssues] = useState([]);
   const [labels, setLabels] = useState([]);
-  const [selectedLabel, setSelectedLabel] = useState('');
   const [showOpenIssues, setShowOpenIssues] = useState(DEFAULT_SHOW_OPEN_ISSUES);
+  const [selectedLabel, setSelectedLabel] = useState(DEFAULT_LABEL);
+  const [sortNewest, setSortNewest] = useState(DEFAULT_SORT_NEWEST);
 
-  async function fetchIssues(showOpenIssues, selectedLabel) {
+  async function fetchIssues(showOpenIssues, selectedLabel, sortNewest) {
     // To make it possible to join with users, we created this view:
     // https://supabase.com/dashboard/project/pokkflfmgpbgphcredjk/sql/1ba57cf9-8bea-49c0-a91b-946adab6d8ef
 
@@ -38,7 +40,7 @@ function App() {
     }
 
     // Apply ordering
-    query = query.order(showOpenIssues ? 'created_at' : 'completed_at', { ascending: false });
+    query = query.order(showOpenIssues ? 'created_at' : 'completed_at', { ascending: !sortNewest });
 
     const { data: issues, error: issuesError } = await query;
     if (issuesError) {
@@ -57,7 +59,7 @@ function App() {
     }
     setLabels(labelsData);
 
-    await fetchIssues(DEFAULT_SHOW_OPEN_ISSUES);
+    await fetchIssues(DEFAULT_SHOW_OPEN_ISSUES, DEFAULT_LABEL, DEFAULT_SORT_NEWEST);
     authWrapperHook.setUser(session?.user);
   }
 
@@ -66,7 +68,7 @@ function App() {
       <div style={{ display: 'flex', gap: 8 }}>
         <select value={showOpenIssues} onChange={async e => {
           const value = parseInt(e.target.value);
-          await fetchIssues(value, selectedLabel);
+          await fetchIssues(value, selectedLabel, sortNewest);
           setShowOpenIssues(value);
         }}>
           <option value={1}>Open</option>
@@ -74,11 +76,19 @@ function App() {
         </select>
         <select value={selectedLabel} onChange={async e => {
           const value = e.target.value;
-          await fetchIssues(showOpenIssues, value);
+          await fetchIssues(showOpenIssues, value, sortNewest);
           setSelectedLabel(value);
         }}>
-          <option value=''>{DEFAULT_LABEL}</option>
+          <option value={DEFAULT_LABEL}>No label</option>
           {labels.map(label => <option key={label.id} value={label.id}>{label.name}</option>)}
+        </select>
+        <select value={sortNewest} onChange={async e => {
+          const value = parseInt(e.target.value);
+          await fetchIssues(showOpenIssues, selectedLabel, value);
+          setSortNewest(value);
+        }}>
+          <option value={1}>Newest</option>
+          <option value={0}>Oldest</option>
         </select>
         <a href="/labels/"><button className="btnSecondary">Labels</button></a>
         <a href="/new_issue/"><button className="btnPrimary">New Issue</button></a>
