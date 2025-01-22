@@ -83,8 +83,8 @@ textarea {
 }
 
 .btnPrimary {
-  background: rgb(97, 0, 194);
-  border: none;
+  background: var(--indigo-900);
+  border: solid 1px var(--indigo-400);
   color: white;
   padding: 8px 16px;
   border-radius: 4px;
@@ -92,7 +92,21 @@ textarea {
   cursor: pointer;
 
   &:hover {
-    background: rgb(51, 0, 102);
+    background: var(--indigo-700);
+  }
+}
+
+.btnSecondary {
+  background: none;
+  border: solid 1px #555;
+  color: #ddd;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background: #444;
   }
 }
 

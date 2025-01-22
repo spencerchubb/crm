@@ -7,31 +7,21 @@ export function MarkdownEditor({ description, setDescription }) {
   const buttonStyle = {
     padding: '4px 12px',
     fontSize: 14,
-    background: 'none',
-    border: 'solid 1px #444',
-    borderRadius: 4,
-    color: '#ddd',
-    borderColor: '#666',
-    cursor: 'pointer',
-  };
-
-  const activeButtonStyle = {
-    ...buttonStyle,
-    background: 'var(--indigo-900)',
-    borderColor: 'var(--indigo-400)',
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button 
-          style={mode === 'write' ? activeButtonStyle : buttonStyle}
+        <button
+          className={mode === 'write' ? 'btnPrimary' : 'btnSecondary'}
+          style={buttonStyle}
           onClick={() => setMode('write')}
         >
           Write
         </button>
-        <button 
-          style={mode === 'preview' ? activeButtonStyle : buttonStyle}
+        <button
+          className={mode === 'preview' ? 'btnPrimary' : 'btnSecondary'}
+          style={buttonStyle}
           onClick={() => setMode('preview')}
         >
           Preview
