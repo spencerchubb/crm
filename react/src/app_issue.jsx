@@ -39,7 +39,7 @@ const Message = memo(function Message({ message }) {
         color: '#e1e1e1',
         lineHeight: '1.5'
       }}>
-        <ReactMarkdown>{message.content}</ReactMarkdown>
+        <ReactMarkdown className="markdown">{message.content}</ReactMarkdown>
       </div>
     </div>
   );

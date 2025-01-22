@@ -36,14 +36,14 @@ export function MarkdownEditor({ value, onChange, placeholder }) {
           onChange={onChange}
         />
       ) : (
-        <div style={{ 
+        <div style={{
           minHeight: 200,
           padding: 8,
           border: 'solid 1px #444',
           borderRadius: 4,
           color: '#ddd'
         }}>
-          <ReactMarkdown>{value}</ReactMarkdown>
+          <ReactMarkdown className="markdown">{value}</ReactMarkdown>
         </div>
       )}
     </div>
