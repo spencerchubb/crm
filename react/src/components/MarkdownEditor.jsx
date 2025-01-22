@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-export function MarkdownEditor({ description, setDescription }) {
+export function MarkdownEditor({ value, onChange, placeholder }) {
   const [mode, setMode] = useState('write');
 
   const buttonStyle = {
@@ -30,10 +30,10 @@ export function MarkdownEditor({ description, setDescription }) {
 
       {mode === 'write' ? (
         <textarea
-          placeholder="Write description in Markdown"
+          placeholder={placeholder}
           style={{ height: 200 }}
-          value={description}
-          onChange={e => setDescription(e.target.value)}
+          value={value}
+          onChange={onChange}
         />
       ) : (
         <div style={{ 
@@ -43,7 +43,7 @@ export function MarkdownEditor({ description, setDescription }) {
           borderRadius: 4,
           color: '#ddd'
         }}>
-          <ReactMarkdown>{description}</ReactMarkdown>
+          <ReactMarkdown>{value}</ReactMarkdown>
         </div>
       )}
     </div>

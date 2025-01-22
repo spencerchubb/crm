@@ -24,9 +24,13 @@ function App() {
       />
       <p style={{ marginTop: 16 }}>Description</p>
       <div style={{ marginTop: 4 }}></div>
-      <MarkdownEditor description={description} setDescription={setDescription} />
+      <MarkdownEditor
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        placeholder="Write description in Markdown"
+      />
       <button
-        style={{ marginTop: 16, alignSelf: 'flex-end' }}
+        style={{ marginTop: 8, alignSelf: 'flex-end' }}
         className="btnPrimary"
         onClick={async () => {
           const { data: issueData, error: issueError } = await supabase.from('issues').insert({

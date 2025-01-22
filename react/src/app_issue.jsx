@@ -2,6 +2,7 @@ import { useState, memo } from 'react';
 import { supabase } from './supabase';
 import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
 import { Timestamp } from './components/Timestamp';
+import { MarkdownEditor } from './components/MarkdownEditor';
 import ReactMarkdown from 'react-markdown';
 
 const searchParams = new URLSearchParams(window.location.search);
@@ -48,6 +49,7 @@ function App() {
   const authWrapperHook = useAuthWrapper();
   const [issue, setIssue] = useState(undefined);
   const [messages, setMessages] = useState([]);
+  const [comment, setComment] = useState('');
 
   async function fetchData(session) {
     const [{ data: issue, error: issueError }, { data: messages, error: messagesError }] = await Promise.all([
@@ -74,13 +76,34 @@ function App() {
   return <AuthWrapper fetchData={fetchData} authWrapperHook={authWrapperHook}>
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 700 }}>
       <h1>{issue?.title}</h1>
-      <p style={{ marginTop: 16 }}>{issue?.description}</p>
-
       <div>
         {messages.map(message => (
           <Message key={message.id} message={message} />
         ))}
       </div>
+      <div style={{ marginTop: 32 }}></div>
+      <MarkdownEditor
+        value={comment}
+        onChange={e => setComment(e.target.value)}
+        placeholder="Write message in Markdown"
+      />
+      <button
+        style={{ marginTop: 8, alignSelf: 'flex-end' }}
+        className="btnPrimary"
+        onClick={async () => {
+          const { error } = await supabase.from('messages').insert({
+            issue_id: issueId,
+            content: comment,
+            uid: authWrapperHook.user.id
+          });
+          if (error) {
+            console.error(error);
+            return;
+          }
+          location.reload();
+        }}>
+        Send
+      </button>
     </div>
   </AuthWrapper>
 }
