@@ -3,23 +3,43 @@ import { supabase } from './supabase';
 import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
 import { Timestamp } from './components/Timestamp';
 
-const SHOW_OPEN_ISSUES_DEFAULT = true;
+const DEFAULT_SHOW_OPEN_ISSUES = true;
+const DEFAULT_LABEL = 'No label';
 
 function App() {
   const authWrapperHook = useAuthWrapper();
   const [issues, setIssues] = useState([]);
-  const [showOpenIssues, setShowOpenIssues] = useState(SHOW_OPEN_ISSUES_DEFAULT);
+  const [labels, setLabels] = useState([]);
+  const [selectedLabel, setSelectedLabel] = useState('');
+  const [showOpenIssues, setShowOpenIssues] = useState(DEFAULT_SHOW_OPEN_ISSUES);
 
-  async function fetchIssues(showOpenIssues) {
-    console.log('fetching issues', showOpenIssues);
+  async function fetchIssues(showOpenIssues, selectedLabel) {
     // To make it possible to join with users, we created this view:
     // https://supabase.com/dashboard/project/pokkflfmgpbgphcredjk/sql/1ba57cf9-8bea-49c0-a91b-946adab6d8ef
-    let query = supabase.from('issues').select(`*, users(raw_user_meta_data), attached_labels(labels(id, name))`);
-    if (showOpenIssues) {
-      query = query.is('completed_at', null).order('created_at', { ascending: false });
+
+    let query;
+    if (selectedLabel) {
+      // Join with attached_labels once to get issues with a specific label.
+      // Then join with attached_labels again to get the labels of those issues.
+      query = supabase
+        .from('issues')
+        .select(`*, users(raw_user_meta_data), al1:attached_labels!inner(), attached_labels(labels(id, name))`)
+        .eq('al1.label_id', selectedLabel);
     } else {
-      query = query.not('completed_at', 'is', null).order('completed_at', { ascending: false });
+      query = supabase
+        .from('issues')
+        .select(`*, users(raw_user_meta_data), attached_labels(labels(id, name))`);
     }
+
+    if (showOpenIssues) {
+      query = query.is('completed_at', null);
+    } else {
+      query = query.not('completed_at', 'is', null);
+    }
+
+    // Apply ordering
+    query = query.order(showOpenIssues ? 'created_at' : 'completed_at', { ascending: false });
+
     const { data: issues, error: issuesError } = await query;
     if (issuesError) {
       console.error(issuesError);
@@ -29,7 +49,15 @@ function App() {
   }
 
   async function fetchData(session) {
-    await fetchIssues(SHOW_OPEN_ISSUES_DEFAULT);
+    // Fetch labels
+    const { data: labelsData, error: labelsError } = await supabase.from('labels').select('*');
+    if (labelsError) {
+      console.error(labelsError);
+      return;
+    }
+    setLabels(labelsData);
+
+    await fetchIssues(DEFAULT_SHOW_OPEN_ISSUES);
     authWrapperHook.setUser(session?.user);
   }
 
@@ -37,14 +65,20 @@ function App() {
     <div style={{ padding: 16, width: '100%', maxWidth: 700 }}>
       <div style={{ display: 'flex', gap: 8 }}>
         <select value={showOpenIssues} onChange={async e => {
-          // const value = e.target.value;
-          // parse bool
           const value = parseInt(e.target.value);
-          await fetchIssues(value);
+          await fetchIssues(value, selectedLabel);
           setShowOpenIssues(value);
         }}>
           <option value={1}>Open</option>
           <option value={0}>Completed</option>
+        </select>
+        <select value={selectedLabel} onChange={async e => {
+          const value = e.target.value;
+          await fetchIssues(showOpenIssues, value);
+          setSelectedLabel(value);
+        }}>
+          <option value=''>{DEFAULT_LABEL}</option>
+          {labels.map(label => <option key={label.id} value={label.id}>{label.name}</option>)}
         </select>
         <a href="/labels/"><button className="btnSecondary">Labels</button></a>
         <a href="/new_issue/"><button className="btnPrimary">New Issue</button></a>
@@ -54,6 +88,7 @@ function App() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <a href={`/issue/?id=${issue.id}`}>{issue.title}</a>
             {issue.attached_labels.map(label => {
+              if (!label.labels) return null;
               return <p
                 key={label.labels.id}
                 style={{ display: 'flex', alignItems: 'center', border: 'solid 1px #555', borderRadius: 100, padding: '4px 8px', gap: 4, fontSize: 14 }}
