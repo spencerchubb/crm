@@ -56,6 +56,8 @@ function SignInPage() {
 }
 
 function SignInWithGoogleButton() {
+  const isLocalhost = location.href.includes('localhost') || location.href.includes('127.0.0.1');
+  const redirectTo = isLocalhost ? 'http://localhost:5173' : 'https://main.dpkcd0qwbkwte.amplifyapp.com/';
   return <button
     id="googleButton"
     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -63,7 +65,7 @@ function SignInWithGoogleButton() {
       supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'https://pokkflfmgpbgphcredjk.supabase.co/auth/v1/callback'
+          redirectTo: redirectTo,
         },
       })
     }}
