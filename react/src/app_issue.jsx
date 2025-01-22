@@ -45,6 +45,44 @@ const Message = memo(function Message({ message }) {
   );
 });
 
+function CompleteWidget({ issue }) {
+  // If completed_at is set, show timestamp and 'Mark as open' button.
+  // Otherwise, show 'Mark as complete' button.
+
+  if (issue.completed_at) {
+    return <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <p style={{ color: '#aaa' }}>Completed <Timestamp timestamp={issue.completed_at} /></p>
+      <button
+        className="btnSecondary"
+        onClick={async () => {
+          const { error } = await supabase.from('issues').update({ completed_at: null }).eq('id', issueId);
+          if (error) {
+            console.error(error);
+            return;
+          }
+          location.reload();
+        }}
+      >
+        Mark as open
+      </button>
+    </div>
+  }
+
+  return <button
+    className="btnSecondary"
+    onClick={async () => {
+      const { error } = await supabase.from('issues').update({ completed_at: new Date() }).eq('id', issueId);
+      if (error) {
+        console.error(error);
+        return;
+      }
+      location.reload();
+    }}
+  >
+    Mark as complete
+  </button>
+}
+
 function App() {
   const authWrapperHook = useAuthWrapper();
   const [issue, setIssue] = useState(undefined);
@@ -75,7 +113,10 @@ function App() {
 
   return <AuthWrapper fetchData={fetchData} authWrapperHook={authWrapperHook}>
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 700 }}>
-      <h1>{issue?.title}</h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <h1>{issue?.title}</h1>
+        <CompleteWidget issue={issue} />
+      </div>
       <div>
         {messages.map(message => (
           <Message key={message.id} message={message} />
