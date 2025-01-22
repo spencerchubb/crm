@@ -82,6 +82,16 @@ textarea {
   color: #ddd;
 }
 
+select, option {
+  background: #181818;
+  border: solid 1px #555;
+  color: #ddd;
+  padding: 7.4px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
 .btnPrimary {
   background: var(--indigo-900);
   border: solid 1px var(--indigo-400);
