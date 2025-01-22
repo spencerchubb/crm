@@ -163,7 +163,7 @@ tr:nth-child(even) {
     width: fit-content;
 
     &:hover {
-      color: #44f;
+      color: var(--indigo-400);
     }
   }
 }
