@@ -23,9 +23,12 @@ function App() {
   }
 
   return <AuthWrapper fetchData={fetchData} authWrapperHook={authWrapperHook}>
-    <div>
-      <a href="/new_issue/"><button className="btnPrimary">New issue</button></a>
-      <div className="issuesList">
+    <div style={{ padding: 16, width: '100%', maxWidth: 700 }}>
+      <div style={{  display: 'flex', justifyContent: 'end', gap: 8 }}>
+        <a href="/labels/"><button className="btnSecondary">Labels</button></a>
+        <a href="/new_issue/"><button className="btnPrimary">New Issue</button></a>
+      </div>
+      <div className="issuesList" style={{ marginTop: 16 }}>
         {issues.map(issue => <div key={issue.id} style={{ display: 'flex', flexDirection: 'column', padding: 8, gap: 4, borderTop: 'solid 1px #555' }}>
           <a href={`/issue/?id=${issue.id}`}>{issue.title}</a>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#aaa' }}>

@@ -92,7 +92,7 @@ textarea {
   cursor: pointer;
 
   &:hover {
-    background: var(--indigo-700);
+    background: var(--indigo-600);
   }
 }
 
