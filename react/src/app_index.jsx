@@ -109,9 +109,7 @@ function App() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#aaa' }}>
             <p style={{ fontSize: 14, color: '#aaa' }}>
-              {issue.users.raw_user_meta_data.name}
-              &nbsp;{issue.completed_at ? 'completed' : 'opened'}&nbsp;
-              <Timestamp timestamp={issue.completed_at || issue.created_at} />
+              #{issue.number} · {issue.users.raw_user_meta_data.name} {issue.completed_at ? 'completed' : 'opened'} <Timestamp timestamp={issue.completed_at || issue.created_at} />
             </p>
           </div>
         </div>)}

@@ -213,7 +213,7 @@ function App() {
       maxWidth: 1000,
       gap: 16
     }}>
-      <h1>{issue?.title}</h1>
+      <h1>{issue?.title} <span style={{ color: '#aaa', fontWeight: 500 }}>#{issue?.number}</span></h1>
       <div style={{ display: 'flex', flexDirection: 'row', gap: 16 }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {messages.map(message => (
