@@ -64,6 +64,37 @@ function EditTitleButton({ issue, setIssue }) {
   </button >
 }
 
+function DeleteIssueButton({ issue }) {
+  return (
+    <button
+      className='btnSecondary'
+      style={{ padding: 4 }}
+      onClick={async () => {
+        if (!confirm(`Delete issue "${issue?.title}"?`)) {
+          return;
+        }
+
+        // Delete the issue.
+        // Other tables will cascade delete if they reference this issue.
+        const { error: issueError } = await supabase
+          .from('issues')
+          .delete()
+          .eq('id', issueId);
+        
+        if (issueError) {
+          console.error('Error deleting issue:', issueError);
+          return;
+        }
+
+        // Redirect to issues list
+        window.location.href = '/';
+      }}
+    >
+      🗑️
+    </button>
+  );
+}
+
 function CompleteWidget({ issue }) {
   // If completed_at is set, show timestamp and 'Mark as open' button.
   // Otherwise, show 'Mark as complete' button.
@@ -241,6 +272,7 @@ function App() {
         </h1>
         <div style={{ flex: 1 }} />
         <EditTitleButton issue={issue} setIssue={setIssue} />
+        <DeleteIssueButton issue={issue} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'row', gap: 16 }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -272,6 +304,7 @@ function App() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <CompleteWidget issue={issue} />
+          <div style={{ marginTop: 16 }} />
           <div style={{ marginTop: 16 }} />
           <LabelManager labels={labels} attachedLabels={attachedLabels} setAttachedLabels={setAttachedLabels} />
         </div>
