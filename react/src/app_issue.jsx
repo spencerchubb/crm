@@ -131,6 +131,7 @@ function LabelManager({ labels, attachedLabels, setAttachedLabels }) {
     </div>
 
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+      {attachedLabels.length === 0 && <p style={{ color: '#aaa' }}>No labels yet</p>}
       {attachedLabels.map(label => (
         <LabelBadge
           key={label.labels.id}
