@@ -45,6 +45,25 @@ const Message = memo(function Message({ message }) {
   );
 });
 
+function EditTitleButton({ issue, setIssue }) {
+  return <button
+    className='btnSecondary'
+    style={{ padding: 4 }}
+    onClick={async () => {
+      const newTitle = prompt('Enter new title:', issue?.title);
+      if (!newTitle || newTitle === issue?.title) return;
+      const { error } = await supabase.from('issues').update({ title: newTitle }).eq('id', issueId);
+      if (error) {
+        console.error(error);
+        return;
+      }
+      setIssue(issue => ({ ...issue, title: newTitle }));
+    }}
+  >
+    ✏️
+  </button >
+}
+
 function CompleteWidget({ issue }) {
   // If completed_at is set, show timestamp and 'Mark as open' button.
   // Otherwise, show 'Mark as complete' button.
@@ -214,7 +233,15 @@ function App() {
       maxWidth: 1000,
       gap: 16
     }}>
-      <h1>{issue?.title} <span style={{ color: '#aaa', fontWeight: 500 }}>#{issue?.number}</span></h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h1>
+          {issue?.title}
+          &nbsp;
+          <span style={{ color: '#aaa', fontWeight: 500 }}>#{issue?.number}</span>
+        </h1>
+        <div style={{ flex: 1 }} />
+        <EditTitleButton issue={issue} setIssue={setIssue} />
+      </div>
       <div style={{ display: 'flex', flexDirection: 'row', gap: 16 }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
           {messages.map(message => (
