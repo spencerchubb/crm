@@ -19,20 +19,20 @@ program.command('get')
     .argument('<number>', 'The issue number')
     .action(async (number) => {
         const { data: issue } = await supabase.from('issues').select('*').eq('number', number).single();
-        const { data: messages } = await supabase.from('messages').select('*, users(raw_user_meta_data)').eq('issue_id', issue.id).order('created_at', { ascending: false });
-        console.log(`#${issue.number} · ${issue.title}`);
+        const { data: messages } = await supabase.from('messages').select('*, users(raw_user_meta_data)').eq('issue_id', issue.id).order('created_at', { ascending: true });
+        let output = `#${issue.number} · ${issue.title}`;
         for (const message of messages) {
-            console.log(`\n\n### Message from ${message.users.raw_user_meta_data.name}\n${message.content}`);
+            output += `\n\n### Message from ${message.users.raw_user_meta_data.name}\n${message.content}`;
         }
+        console.log(output);
     });
 
 program.command('list')
     .description('List all issues')
     .action(async () => {
         const { data, error } = await supabase.from('issues').select('*');
-        for (const row of data) {
-            console.log(`#${row.number} · ${row.title}`);
-        }
+        let output = data.map(row => `#${row.number} · ${row.title}`).join('\n');
+        console.log(output);
     });
 
 program.parse(process.argv);

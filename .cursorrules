@@ -1,0 +1,15 @@
+You have access to the `issues` CLI.
+
+### Begin help text for issues CLI
+Usage: ./issues [options] [command]
+
+CLI for managing issues
+
+Options:
+  -V, --version   output the version number
+  -h, --help      display help for command
+
+Commands:
+  get <number>    Get an issue
+  list            List all issues
+  help [command]  display help for command
