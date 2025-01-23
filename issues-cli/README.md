@@ -1,0 +1,1 @@
+This directory contains a CLI that is meant to be used by humans or LLMs. The outputs are designed to be human-readable and LLM-readable.
