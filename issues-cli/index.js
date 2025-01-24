@@ -35,4 +35,31 @@ program.command('list')
         console.log(output);
     });
 
+program.command('status')
+    .description('Update the status of an issue')
+    .argument('<number>', 'The issue number')
+    .argument('<status>', 'The new status (open/complete)')
+    .action(async (number, status) => {
+        // Validate status argument
+        if (status !== 'open' && status !== 'complete') {
+            console.error('Status must be either "open" or "complete"');
+            return;
+        }
+
+        // Update the issue
+        const { error } = await supabase
+            .from('issues')
+            .update({ 
+                completed_at: status === 'complete' ? new Date().toISOString() : null 
+            })
+            .eq('number', number);
+
+        if (error) {
+            console.error('Failed to update issue:', error.message);
+            return;
+        }
+
+        console.log(`Issue #${number} marked as ${status}`);
+    });
+
 program.parse(process.argv);
