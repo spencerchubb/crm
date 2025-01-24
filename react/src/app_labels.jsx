@@ -3,6 +3,9 @@ import { supabase } from './supabase';
 import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
 import Modal from './components/Modal';
 
+const searchParams = new URLSearchParams(window.location.search);
+const projectId = searchParams.get('project_id');
+
 function App() {
   const authWrapperHook = useAuthWrapper();
   const [labels, setLabels] = useState([]);
@@ -13,7 +16,7 @@ function App() {
   const idOfLabelToEdit = useRef(null);
 
   async function fetchData(session) {
-    const { data: labels, error: labelsError } = await supabase.from('labels').select('*');
+    const { data: labels, error: labelsError } = await supabase.from('labels').select('*').eq('project_id', projectId);
 
     if (labelsError) {
       console.error(labelsError);
@@ -40,15 +43,15 @@ function App() {
   }
 
   return <AuthWrapper fetchData={fetchData} authWrapperHook={authWrapperHook}>
-    <div style={{ display: 'flex', flexDirection: 'column', padding: 16, width: '100%', maxWidth: 700 }}>
+    <div style={{ padding: 16, width: '100%', maxWidth: 700 }}>
       <button
-        style={{ alignSelf: 'flex-end' }}
         className="btnPrimary"
         onClick={() => showCreateModal()}
       >
         Create Label
       </button>
-      <div style={{ padding: '16px 0', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 700 }}>
+      <div style={{ padding: '16px 0', display: 'flex', flexDirection: 'column', width: '100%' }}>
+        {labels.length === 0 && <p style={{ color: '#aaa' }}>No labels yet</p>}
         {labels.map(label => <div key={label.id} style={{ display: 'flex', alignItems: 'center', gap: 8, borderTop: 'solid 1px #555', padding: 16 }}>
           <p style={{ fontWeight: 600 }}>{label.name}</p>
           <p style={{ color: '#aaa' }}>{label.description}</p>
@@ -87,8 +90,8 @@ function App() {
           style={{ marginTop: 16, alignSelf: 'flex-end' }}
           onClick={async () => {
             const { error } = modalTitle === 'Create Label'
-              ? await supabase.from('labels').insert({ name: labelName, description: labelDescription })
-              : await supabase.from('labels').update({ name: labelName, description: labelDescription }).eq('id', idOfLabelToEdit.current);
+              ? await supabase.from('labels').insert({ project_id: projectId, name: labelName, description: labelDescription })
+              : await supabase.from('labels').update({ project_id: projectId, name: labelName, description: labelDescription }).eq('id', idOfLabelToEdit.current);
             if (error) {
               console.error(error);
               return;

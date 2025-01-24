@@ -223,10 +223,15 @@ function App() {
   const [attachedLabels, setAttachedLabels] = useState([]);
 
   async function fetchData(session) {
-    const [{ data: issue, error: issueError }, { data: messages, error: messagesError }, { data: labels, error: labelsError }, { data: attachedLabels, error: attachedLabelsError }] = await Promise.all([
-      supabase.from('issues').select('*').eq('id', issueId).single(),
+    const { data: issue, error: issueError } = await supabase.from('issues').select('*').eq('id', issueId).single();
+    if (issueError) {
+      console.error(issueError);
+      return;
+    }
+
+    const [{ data: messages, error: messagesError }, { data: labels, error: labelsError }, { data: attachedLabels, error: attachedLabelsError }] = await Promise.all([
       supabase.from('messages').select('*, users(raw_user_meta_data)').eq('issue_id', issueId).order('created_at', { ascending: true }),
-      supabase.from('labels').select('*'),
+      supabase.from('labels').select('*').eq('project_id', issue?.project_id),
       supabase.from('attached_labels').select('*, labels(*)').eq('issue_id', issueId)
     ]);
 

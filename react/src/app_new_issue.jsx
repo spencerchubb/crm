@@ -3,6 +3,9 @@ import { supabase } from './supabase';
 import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
 import { MarkdownEditor } from './components/MarkdownEditor';
 
+const searchParams = new URLSearchParams(window.location.search);
+const projectId = searchParams.get('project_id');
+
 function App() {
   const authWrapperHook = useAuthWrapper();
   const [title, setTitle] = useState('');
@@ -33,9 +36,12 @@ function App() {
         style={{ marginTop: 8, alignSelf: 'flex-end' }}
         className="btnPrimary"
         onClick={async () => {
+          const maxNumber = (await supabase.from('issues').select('number').eq('project_id', projectId).order('number', { ascending: false }).single())?.data?.number;
           const { data: issueData, error: issueError } = await supabase.from('issues').insert({
             title,
             author_id: authWrapperHook.user.id,
+            project_id: projectId,
+            number: 1 + (maxNumber ?? 0),
           }).select();
 
           if (issueError) {
