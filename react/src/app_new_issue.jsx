@@ -53,7 +53,7 @@ function App() {
           if (messageError) {
             console.error('Error creating message:', messageError);
           } else {
-            console.log('Issue and message created successfully');
+            history.back();
           }
         }}
       >
