@@ -36,12 +36,14 @@ function App() {
         style={{ marginTop: 8, alignSelf: 'flex-end' }}
         className="btnPrimary"
         onClick={async () => {
-          const maxNumber = (await supabase.from('issues').select('number').eq('project_id', projectId).order('number', { ascending: false }).single())?.data?.number;
+          const { data: rows } = await supabase.from('issues').select('number').eq('project_id', projectId).order('number', { ascending: false }).limit(1);
+          const singleRow = rows.length > 0 ? rows[0] : null;
+          const maxNumber = singleRow ? singleRow.number : 0;
           const { data: issueData, error: issueError } = await supabase.from('issues').insert({
             title,
             author_id: authWrapperHook.user.id,
             project_id: projectId,
-            number: 1 + (maxNumber ?? 0),
+            number: 1 + maxNumber,
           }).select();
 
           if (issueError) {
