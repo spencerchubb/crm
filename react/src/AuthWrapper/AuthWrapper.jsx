@@ -4,6 +4,18 @@ import { supabase } from '../supabase';
 export function AuthWrapper({ fetchData, authWrapperHook, children }) {
   const userRef = useRef(undefined);
 
+  async function upsertUser(user) {
+    const { error } = await supabase.from('users').upsert({
+      id: user.id,
+      email: user.email,
+      name: user.user_metadata.name,
+      picture: user.user_metadata.picture,
+    });
+    if (error) {
+      console.error(error);
+    }
+  }
+
   useEffect(() => {
     const authListener = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!session) {
@@ -13,6 +25,7 @@ export function AuthWrapper({ fetchData, authWrapperHook, children }) {
       if (JSON.stringify(userRef.current) === JSON.stringify(session?.user)) {
         return;
       }
+      upsertUser(session?.user);
       userRef.current = session?.user;
 
       fetchData(session);
