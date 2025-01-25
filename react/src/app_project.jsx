@@ -30,12 +30,12 @@ function App() {
       // Then join with attached_labels again to get the labels of those issues.
       query = supabase
         .from('issues')
-        .select(`*, users(raw_user_meta_data), al1:attached_labels!inner(), attached_labels(labels(id, name))`)
+        .select(`*, users(*), al1:attached_labels!inner(), attached_labels(labels(id, name))`)
         .eq('al1.label_id', selectedLabel);
     } else {
       query = supabase
         .from('issues')
-        .select(`*, users(raw_user_meta_data), attached_labels(labels(id, name))`);
+        .select(`*, users(*), attached_labels(labels(id, name))`);
     }
 
     query = query.eq('project_id', projectId);
@@ -103,7 +103,6 @@ function App() {
         }}>
           <option value={DEFAULT_LABEL}>No label</option>
           {labels.map(label => <option key={label.id} value={label.id}>{label.name}</option>)}
-          <a href={`/labels/?project_id=${projectId}`}><button className="btnSecondary">Labels</button></a>
         </select>
         <select value={sortNewest} onChange={async e => {
           const value = parseInt(e.target.value);
@@ -132,7 +131,7 @@ function App() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#aaa' }}>
             <p style={{ fontSize: 14, color: '#aaa' }}>
-              #{issue.number} · {issue.users.raw_user_meta_data.name} {issue.completed_at ? 'completed' : 'opened'} <Timestamp timestamp={issue.completed_at || issue.created_at} />
+              #{issue.number} · {issue.users.name} {issue.completed_at ? 'completed' : 'opened'} <Timestamp timestamp={issue.completed_at || issue.created_at} />
             </p>
           </div>
         </div>)}

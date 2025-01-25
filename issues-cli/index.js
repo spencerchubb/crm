@@ -19,10 +19,10 @@ program.command('get')
     .argument('<number>', 'The issue number')
     .action(async (number) => {
         const { data: issue } = await supabase.from('issues').select('*').eq('number', number).single();
-        const { data: messages } = await supabase.from('messages').select('*, users(raw_user_meta_data)').eq('issue_id', issue.id).order('created_at', { ascending: true });
+        const { data: messages } = await supabase.from('messages').select('*, users(*)').eq('issue_id', issue.id).order('created_at', { ascending: true });
         let output = `#${issue.number} · ${issue.title}`;
         for (const message of messages) {
-            output += `\n\n### Message from ${message.users.raw_user_meta_data.name}\n${message.content}`;
+            output += `\n\n### Message from ${message.users.name}\n${message.content}`;
         }
         console.log(output);
     });

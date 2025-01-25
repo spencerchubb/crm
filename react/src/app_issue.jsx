@@ -24,12 +24,12 @@ const Message = memo(function Message({ message }) {
         color: '#aaa'
       }}>
         <img
-          src={message.users?.raw_user_meta_data?.avatar_url}
-          alt={message.users?.raw_user_meta_data?.name}
+          src={message.users?.picture}
+          alt={message.users?.name}
           style={{ width: 32, height: 32, borderRadius: '50%' }}
         />
         <span style={{ fontWeight: 600 }}>
-          {message.users?.raw_user_meta_data?.name || 'Unknown User'}
+          {message.users?.name || 'Unknown User'}
         </span>
         <div style={{ flex: 1 }} />
         <Timestamp timestamp={message.created_at} />
@@ -230,7 +230,7 @@ function App() {
     }
 
     const [{ data: messages, error: messagesError }, { data: labels, error: labelsError }, { data: attachedLabels, error: attachedLabelsError }] = await Promise.all([
-      supabase.from('messages').select('*, users(raw_user_meta_data)').eq('issue_id', issueId).order('created_at', { ascending: true }),
+      supabase.from('messages').select('*, users(*)').eq('issue_id', issueId).order('created_at', { ascending: true }),
       supabase.from('labels').select('*').eq('project_id', issue?.project_id),
       supabase.from('attached_labels').select('*, labels(*)').eq('issue_id', issueId)
     ]);
