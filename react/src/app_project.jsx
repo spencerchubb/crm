@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from './supabase';
 import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
 import { Timestamp } from './components/Timestamp';
+import { MaterialSymbolsHome } from './components/Icons';
 
 const DEFAULT_SHOW_OPEN_ISSUES = true;
 const DEFAULT_LABEL = '';
@@ -80,7 +81,10 @@ function App() {
 
   return <AuthWrapper fetchData={fetchData} authWrapperHook={authWrapperHook}>
     <div style={{ padding: 16, width: '100%', maxWidth: 700 }}>
-      <h1 style={{ fontSize: 24 }}>{project?.name}</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <a href="/" style={{ width: 36, height: 36 }}><MaterialSymbolsHome/></a>
+        <h1 style={{ fontSize: 22 }}>{project?.name}</h1>
+      </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
         <select value={showOpenIssues} onChange={async e => {
           const value = parseInt(e.target.value);
