@@ -11,6 +11,7 @@ export default defineConfig({
         issue: './issue/index.html',
         labels: './labels/index.html',
         new_issue: './new_issue/index.html',
+        project: './project/index.html',
       },
     },
   },
