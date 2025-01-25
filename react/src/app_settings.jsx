@@ -8,6 +8,7 @@ const projectId = searchParams.get('project_id');
 
 function App() {
   const authWrapperHook = useAuthWrapper();
+  const [project, setProject] = useState(null);
   const [labels, setLabels] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
@@ -16,15 +17,34 @@ function App() {
   const idOfLabelToEdit = useRef(null);
 
   async function fetchData(session) {
-    const { data: labels, error: labelsError } = await supabase.from('labels').select('*').eq('project_id', projectId);
+    const [{ data: project, error: projectError }, { data: labels, error: labelsError }] = await Promise.all([
+      supabase.from('projects').select('*').eq('id', projectId).single(),
+      supabase.from('labels').select('*').eq('project_id', projectId),
+    ]);
 
+    if (projectError) {
+      console.error(projectError);
+      return;
+    }
     if (labelsError) {
       console.error(labelsError);
       return;
     }
 
+    setProject(project);
     setLabels(labels || []);
     authWrapperHook.setUser(session?.user);
+  }
+
+  async function changeProjectName() {
+    const name = prompt('New name', project?.name);
+    if (!name) return;
+    const { error } = await supabase.from('projects').update({ name }).eq('id', projectId);
+    if (error) {
+      console.error(error);
+      return;
+    }
+    location.reload();
   }
 
   function showCreateModal() {
@@ -44,6 +64,11 @@ function App() {
 
   return <AuthWrapper fetchData={fetchData} authWrapperHook={authWrapperHook}>
     <div style={{ padding: 16, width: '100%', maxWidth: 700 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <h1 style={{ fontSize: 22 }}>{project?.name}</h1>
+        <button className="btnPrimary" onClick={changeProjectName}>Change Name</button>
+      </div>
+      <div style={{ marginTop: 50 }}></div>
       <button
         className="btnPrimary"
         onClick={() => showCreateModal()}
