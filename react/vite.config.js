@@ -9,9 +9,9 @@ export default defineConfig({
       input: {
         index: './index.html',
         issue: './issue/index.html',
-        labels: './labels/index.html',
         new_issue: './new_issue/index.html',
         project: './project/index.html',
+        settings: './settings/index.html',
       },
     },
   },

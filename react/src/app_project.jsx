@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from './supabase';
 import { AuthWrapper, useAuthWrapper } from './AuthWrapper';
 import { Timestamp } from './components/Timestamp';
-import { MaterialSymbolsHome } from './components/Icons';
+import { MaterialSymbolsHome, MaterialSymbolsSettings } from './components/Icons';
 
 const DEFAULT_SHOW_OPEN_ISSUES = true;
 const DEFAULT_LABEL = '';
@@ -82,8 +82,10 @@ function App() {
   return <AuthWrapper fetchData={fetchData} authWrapperHook={authWrapperHook}>
     <div style={{ padding: 16, width: '100%', maxWidth: 700 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <a href="/" style={{ width: 36, height: 36 }}><MaterialSymbolsHome/></a>
+        <a href="/" style={{ width: 36, height: 36 }}><MaterialSymbolsHome /></a>
         <h1 style={{ fontSize: 22 }}>{project?.name}</h1>
+        <div style={{ flex: 1 }} />
+        <a href={`/settings/?project_id=${projectId}`} style={{ width: 36, height: 36 }}><MaterialSymbolsSettings /></a>
       </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
         <select value={showOpenIssues} onChange={async e => {
@@ -101,6 +103,7 @@ function App() {
         }}>
           <option value={DEFAULT_LABEL}>No label</option>
           {labels.map(label => <option key={label.id} value={label.id}>{label.name}</option>)}
+          <a href={`/labels/?project_id=${projectId}`}><button className="btnSecondary">Labels</button></a>
         </select>
         <select value={sortNewest} onChange={async e => {
           const value = parseInt(e.target.value);
@@ -110,7 +113,6 @@ function App() {
           <option value={1}>Newest</option>
           <option value={0}>Oldest</option>
         </select>
-        <a href={`/labels/?project_id=${projectId}`}><button className="btnSecondary">Labels</button></a>
         <a href={`/new_issue/?project_id=${projectId}`}><button className="btnPrimary">New Issue</button></a>
       </div>
       <div className="issuesList" style={{ marginTop: 16 }}>
