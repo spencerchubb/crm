@@ -1,17 +1,22 @@
+### attached_labels table
+- issue_id, uuid
+- label_id, uuid
+
 ### issues table
 - id, uuid, auto-generated
 - created_at, timestamp with time zone, auto-generated
 - author_id, uuid
-- assigned_team, uuid
-- tags, ARRAY
 - title, text
 - completed_at, timestamp with time zone
+- number, bigint
+- project_id, uuid
+- embedding, USER-DEFINED
 
 ### labels table
 - id, uuid, auto-generated
-- created_at, timestamp with time zone, auto-generated
 - name, text
 - description, text
+- project_id, uuid
 
 ### messages table
 - id, uuid, auto-generated
@@ -20,8 +25,17 @@
 - uid, uuid
 - content, text
 
+### project_members table
+- project_id, uuid
+- uid, uuid
+- role, text
+
+### projects table
+- id, uuid, auto-generated
+- name, text
+
 ### users table
-- id, uuid
-- email, character varying
-- last_sign_in_at, timestamp with time zone
-- raw_user_meta_data, jsonb
+- id, uuid, auto-generated
+- email, text
+- name, text
+- picture, text

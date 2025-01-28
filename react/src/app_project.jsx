@@ -114,11 +114,11 @@ function App() {
         </select>
         <a href={`/new_issue/?project_id=${projectId}`}><button className="btnPrimary">New Issue</button></a>
       </div>
-      <div className="issuesList" style={{ marginTop: 16 }}>
+      <div style={{ marginTop: 16 }}>
         {issues.length === 0 && <p style={{ color: '#aaa' }}>No issues yet</p>}
         {issues.map(issue => <div key={issue.id} style={{ display: 'flex', flexDirection: 'column', padding: '12px 8px', gap: 8, borderTop: 'solid 1px #555' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <a href={`/issue/?id=${issue.id}`}>{issue.title}</a>
+            <a href={`/issue/?id=${issue.id}`} className="link">{issue.title}</a>
             {issue.attached_labels.map(label => {
               if (!label.labels) return null;
               return <p

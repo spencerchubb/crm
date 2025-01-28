@@ -96,7 +96,8 @@ textarea {
   color: #ddd;
 }
 
-select, option {
+select,
+option {
   background: #181818;
   border: solid 1px #555;
   color: #ddd;
@@ -216,7 +217,8 @@ tr:nth-child(even) {
     line-height: 24px;
   }
 
-  & ul, & ol {
+  & ul,
+  & ol {
     margin-top: 4px;
     padding-left: 24px;
   }
@@ -250,16 +252,13 @@ tr:nth-child(even) {
   }
 }
 
-.issuesList {
-  & a {
-    text-decoration: none;
-    color: #ddd;
-    font-weight: 700;
-    width: fit-content;
+.link {
+  text-decoration: none;
+  color: #ddd;
+  width: fit-content;
 
-    &:hover {
-      color: var(--indigo-400);
-    }
+  &:hover {
+    color: var(--indigo-400);
   }
 }
 

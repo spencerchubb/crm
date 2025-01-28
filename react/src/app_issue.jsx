@@ -10,39 +10,37 @@ const searchParams = new URLSearchParams(window.location.search);
 const issueId = searchParams.get('id');
 
 const Message = memo(function Message({ message }) {
-  return (
+  return <div style={{
+    padding: 16,
+    borderRadius: 8,
+    border: '1px solid #333',
+  }}>
     <div style={{
-      padding: 16,
-      borderRadius: 8,
-      border: '1px solid #333'
+      display: 'flex',
+      alignItems: 'center',
+      marginBottom: 8,
+      gap: 8,
+      color: '#aaa'
     }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: 8,
-        gap: 8,
-        color: '#aaa'
-      }}>
-        <img
-          src={message.users?.picture}
-          alt={message.users?.name}
-          style={{ width: 32, height: 32, borderRadius: '50%' }}
-        />
-        <span style={{ fontWeight: 600 }}>
-          {message.users?.name || 'Unknown User'}
-        </span>
-        <div style={{ flex: 1 }} />
-        <Timestamp timestamp={message.created_at} />
-      </div>
-      <div style={{
-        marginTop: 8,
-        color: '#e1e1e1',
-        lineHeight: '1.5'
-      }}>
-        <ReactMarkdown className="markdown">{message.content}</ReactMarkdown>
-      </div>
+      <img
+        src={message.users?.picture}
+        alt={message.users?.name}
+        style={{ width: 32, height: 32, borderRadius: '50%' }}
+      />
+      <span style={{ fontWeight: 600 }}>
+        {message.users?.name || 'Unknown User'}
+      </span>
+      <div style={{ flex: 1 }} />
+      <Timestamp timestamp={message.created_at} />
     </div>
-  );
+    <div style={{
+      marginTop: 8,
+      color: '#e1e1e1',
+      lineHeight: '1.5'
+    }}>
+      <ReactMarkdown className="markdown">{message.content}</ReactMarkdown>
+    </div>
+  </div>
 });
 
 function EditTitleButton({ issue, setIssue }) {
@@ -80,7 +78,7 @@ function DeleteIssueButton({ issue }) {
           .from('issues')
           .delete()
           .eq('id', issueId);
-        
+
         if (issueError) {
           console.error('Error deleting issue:', issueError);
           return;
@@ -280,17 +278,20 @@ function App() {
         <DeleteIssueButton issue={issue} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'row', gap: 16 }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {messages.map(message => (
-            <Message key={message.id} message={message} />
-          ))}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {messages.map(message => (
+              <Message key={message.id} message={message} />
+            ))}
+          </div>
+          <div style={{ marginTop: 16 }} />
           <MarkdownEditor
             value={comment}
             onChange={e => setComment(e.target.value)}
             placeholder="Write message in Markdown"
           />
           <button
-            style={{ alignSelf: 'flex-end' }}
+            style={{ marginTop: 8, alignSelf: 'flex-end' }}
             className="btnPrimary"
             onClick={async () => {
               const { error } = await supabase.from('messages').insert({

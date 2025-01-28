@@ -41,11 +41,11 @@ function App() {
       >
         New Project
       </button>
-      <div className="issuesList" style={{ marginTop: 16 }}>
+      <div style={{ marginTop: 16 }}>
         {projects.length === 0 && <p style={{ color: '#aaa' }}>No projects yet</p>}
         {projects.map(project => <div key={project.projects.id} style={{ display: 'flex', flexDirection: 'column', padding: '12px 8px', gap: 8, borderTop: 'solid 1px #555' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <a href={`/project/?id=${project.projects.id}`}>{project.projects.name}</a>
+            <a href={`/project/?id=${project.projects.id}`} className="link">{project.projects.name}</a>
           </div>
         </div>)}
       </div>
