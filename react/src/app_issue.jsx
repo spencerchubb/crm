@@ -84,8 +84,7 @@ function DeleteIssueButton({ issue }) {
           return;
         }
 
-        // Redirect to issues list
-        window.location.href = '/';
+        history.back();
       }}
     >
       🗑️

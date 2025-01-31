@@ -6,6 +6,11 @@ export const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function callEdgeFunction(endpoint: string, body: any) {
+  // To prevent shooting myself in the foot
+  if (endpoint.startsWith('/')) {
+    endpoint = endpoint.slice(1);
+  }
+
   const response = await fetch(`${supabaseUrl}/functions/v1/api/${endpoint}`, {
     method: 'POST',
     headers: {
